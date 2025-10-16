@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>لعبة الأرقام العربية — أونلاين</title>
+
+<!-- Google Fonts: put this in the head -->
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+/* ---------- Visual theme ---------- */
+:root{
+  --bg1: #fff7f9;
+  --bg2: #fffefc;
+  --accent: #d32f2f;
+  --muted: #6b6b6b;
+  --card:#ffffff;
+  --glass: rgba(255,255,255,0.6);
+  --correct:#dff0dc;
+  --wrong:#ffe7e7;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: "Tajawal", "Noto Kufi Arabic", "Tahoma", Arial, sans-serif;
+  background: linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 100%);
+  color:#222;
+  direction:rtl;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  padding:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* container */
+.app{
+  width:100%;
+  max-width:920px;
+  margin:0 auto;
+}
+
+/* header */
+.header{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:18px;
+}
+.brand{ display:flex; gap:12px; align-items:center; }
+.logo{ width:56px; height:56px; border-radius:12px; background: linear-gradient(135deg,#ff6b6b,#ffb86b); display:grid; place-items:center; color:white; font-weight:700; box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+.title{ font-size:20px; line-height:1; }
+.subtitle{ font-size:12px; color:var(--muted); }
+
+/* card */
+.card{ background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.85)); border-radius:14px; padding:18px; box-shadow: 0 8px 30px rgba(15,15,15,0.06); border: 1px solid rgba(0,0,0,0.03); }
+
+/* center layout */
+.center{ display:grid; gap:14px; align-items:center; justify-items:center; }
+
+/* first screen (name) */
+#nameScreen{ max-width:520px; margin: 4px auto; text-align:center; }
+.input{ width:100%; display:flex; gap:8px; align-items:center; justify-content:center; margin-top:12px; }
+.input input{ flex:1; padding:12px 14px; border-radius:10px; border:1px solid #eee; font-size:16px; outline:none; box-shadow: inset 0 1px 0 rgba(0,0,0,0.02); }
+.btn{ display:inline-flex; align-items:center; gap:10px; padding:12px 18px; border-radius:12px; border:none; background:linear-gradient(90deg,var(--accent), #ff7043); color:white; font-weight:700; cursor:pointer; box-shadow: 0 8px 20px rgba(211,47,47,0.18); transition:transform .15s ease, box-shadow .15s ease; }
+.btn:active{ transform:translateY(2px) scale(.996); }
+.btn.secondary{ background:transparent; color:var(--accent); border:2px solid rgba(211,47,47,0.12); box-shadow:none; }
+
+/* mode screen (only three big buttons) */
+.mode-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; width:100%; margin-top:8px; }
+.mode-card{ background:linear-gradient(180deg,#fff,#fff); border-radius:12px; padding:16px; text-align:center; box-shadow: 0 6px 18px rgba(0,0,0,0.05); cursor:pointer; transition:transform .12s ease, box-shadow .12s ease; border:1px solid rgba(0,0,0,0.03); }
+.mode-card:hover{ transform:translateY(-6px); box-shadow: 0 18px 40px rgba(0,0,0,0.08); }
+.mode-emoji{ font-size:28px; margin-bottom:8px; display:block; }
+.mode-title{ font-weight:800; font-size:18px; margin-bottom:4px;}
+.mode-desc{ font-size:13px; color:var(--muted) }
+
+/* game area */
+#gameArea{ display:none; margin-top:12px; }
+.topbar{ display:flex; gap:10px; align-items:center; justify-content:space-between; width:100%; flex-wrap:wrap;}
+.info-pill{ background:var(--glass); padding:8px 12px; border-radius:999px; border:1px solid rgba(0,0,0,0.03); display:inline-flex; gap:8px; align-items:center; font-weight:700; }
+.big-btn{ padding:10px 14px; border-radius:10px; border:2px solid rgba(0,0,0,0.06); background:white; cursor:pointer; }
+
+/* options */
+#options{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:18px; }
+.option{ min-width:120px; padding:14px 18px; border-radius:10px; text-align:center; font-size:18px; background:linear-gradient(180deg,#fff,#fff); border:1px solid rgba(0,0,0,0.04); cursor:pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.03); transition:transform .12s ease, background .12s ease, border-color .12s ease; }
+.option:active{ transform:translateY(2px) }
+
+/* correct/wrong feedback (ADD THIS CSS) */
+.option.correct { background: linear-gradient(180deg, #f0fff4, var(--correct)); border-color: #66bb6a; box-shadow: 0 10px 26px rgba(102,187,106,0.12); transform: scale(1.03); }
+.option.wrong { background: linear-gradient(180deg, #fff5f5, var(--wrong)); border-color: #e57373; box-shadow: 0 8px 22px rgba(229,115,115,0.10); transform: scale(.98); }
+
+/* progress bar */
+#progressWrap{height:10px;background:#f0f0f0;border-radius:999px;overflow:hidden;margin-top:12px}
+#progress{height:100%;width:100%;background:linear-gradient(90deg,#ff7043,#d32f2f);transition:width 0.25s linear}
+
+/* end screen */
+#endScreen{ margin-top:18px; text-align:center; display:none; }
+
+/* leaderboards */
+#leaderboards{ display:none; gap:12px; margin-top:18px; justify-content:center; }
+.board{ min-width:200px; padding:12px; background:linear-gradient(180deg,#fff,#fff); border-radius:10px; box-shadow:0 6px 16px rgba(0,0,0,0.04); border:1px solid rgba(0,0,0,0.03) }
+
+/* small */
+.small{ font-size:13px; color:var(--muted) }
+
+/* responsive tweaks */
+@media (max-width:720px){
+  .mode-grid{ grid-template-columns:repeat(1,1fr) }
+  .header{ flex-direction:column; align-items:flex-start; gap:8px }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="brand">
+      <div class="logo">أ</div>
+      <div>
+        <div class="title">لعبة الأرقام العربية</div>
+        <div class="subtitle">خمن الرقم المسموع — سهل وسريع للعب مع الأصدقاء</div>
+      </div>
+    </div>
+    <div class="small">يحفظ النتائج عبر Firebase (أونلاين) — ملفات الصوت من Google Cloud TTS</div>
+  </div>
+
+  <div class="card center" id="nameScreen">
+    <div style="width:100%;text-align:center">
+      <h2>أدخل اسمك للبدء</h2>
+      <p class="small">الاسم سيستخدم على لوحة المتصدرين</p>
+    </div>
+    <div class="input" style="width:100%;max-width:520px">
+      <input id="playerName" placeholder="اكتب اسمك هنا" />
+      <button id="saveName" class="btn">ابدأ الآن</button>
+    </div>
+    <div class="small" style="margin-top:6px">ملاحظة: اضغط 'ابدأ الآن' ثم اسمح للصوت إن طُلب</div>
+  </div>
+
+  <!-- second screen -->
+  <div class="card center" id="modeScreen" style="display:none; margin-top:16px; text-align:center; max-width:760px;">
+    <h2>اختر الوضع</h2>
+    <p class="small">سهل (١–١٠) أو صعب (١–١٠٠) أو اعرض لوحة المتصدرين</p>
+    <div class="mode-grid" style="width:100%;">
+      <div class="mode-card" id="modeEasy" role="button" tabindex="0" aria-pressed="false"><span class="mode-emoji">🔢</span><div class="mode-title">سهل</div><div class="mode-desc">أرقام ١–١٠ · ٣ خيارات</div></div>
+      <div class="mode-card" id="modeHard" role="button" tabindex="0" aria-pressed="false"><span class="mode-emoji">⚡</span><div class="mode-title">صعب</div><div class="mode-desc">أرقام ١–١٠٠ · ٥ خيارات</div></div>
+      <div class="mode-card" id="viewBoards" role="button" tabindex="0" aria-pressed="false"><span class="mode-emoji">🏆</span><div class="mode-title">عرض لوحة المتصدرين</div><div class="mode-desc">عرض أعلى النتائج المحفوظة</div></div>
+    </div>
+  </div>
+
+  <!-- game area -->
+  <div class="card" id="gameArea" style="margin-top:16px;">
+    <div class="topbar">
+      <div class="info-pill">اللاعب: <strong id="pname" style="margin-inline:6px"></strong></div>
+      <div class="info-pill">الوقت: <strong id="timeLeft">60</strong> ث</div>
+      <div class="info-pill">النتيجة: <strong id="scoreVal">0</strong></div>
+      <div><button id="playNumberBtn" class="big-btn">🔊 إعادة سماع</button></div>
+    </div>
+
+    <div id="progressWrap"><div id="progress"></div></div>
+
+    <div id="options" aria-live="polite"></div>
+
+    <div id="endScreen">
+      <h3>انتهى الوقت!</h3>
+      <p class="small">نتيجتك: <strong id="finalScore"></strong></p>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:10px">
+        <button id="saveScoreBtn" class="btn">حفظ النتيجة</button>
+        <button id="playAgainBtn" class="btn secondary">العب مرة أخرى</button>
+      </div>
+    </div>
+
+    <div id="leaderboards" style="display:none; margin-top:18px; justify-content:center; gap:12px;">
+      <div class="board"><h4>لوحة (سهل)</h4><ol id="boardEasy"></ol></div>
+      <div class="board"><h4>لوحة (صعب)</h4><ol id="boardHard"></ol></div>
+    </div>
+  </div>
+</div>
+
+<!-- ========== FIREBASE SDK (paste before your main game script) ========== -->
+<script src="https://www.gstatic.com/firebasejs/9.28.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.28.0/firebase-database-compat.js"></script>
+<script>
+  // ---------- PASTE YOUR FIREBASE CONFIG OBJECT HERE ----------
+  // Example:
+  // const firebaseConfig = {
+  //   apiKey: "API_KEY",
+  //   authDomain: "PROJECT.firebaseapp.com",
+  //   databaseURL: "https://PROJECT.firebaseio.com",
+  //   projectId: "PROJECT",
+  //   storageBucket: "PROJECT.appspot.com",
+  //   messagingSenderId: "...",
+  //   appId: "..."
+  // };
+  const firebaseConfig = /* PASTE FIREBASE CONFIG HERE */ {};
+
+  // initialize firebase
+  if (Object.keys(firebaseConfig).length !== 0) {
+    firebase.initializeApp(firebaseConfig);
+    var db = firebase.database();
+    console.log('Firebase initialized');
+  } else {
+    console.warn('Firebase config is empty — leaderboard will fallback to localStorage');
+    var db = null;
+  }
+</script>
+
+<!-- ========== MAIN GAME SCRIPT (uses db if present) ========== -->
+<script>
+/* ---------------- Config ---------------- */
+const GAME_LENGTH = 60;
+const EASY_MAX = 10;
+const HARD_MAX = 100;
+const EASY_OPTIONS = 3;
+const HARD_OPTIONS = 5;
+const INITIAL_DELAY_MS = 1200;
+const MIN_DELAY_MS = 400;
+const DELAY_STEP = 100;
+const ASSET_PATH = 'assets/numbers/'; // put mp3 files here: assets/numbers/1.mp3 ...
+
+/* ---------------- UI refs ---------------- */
+const nameScreen = document.getElementById('nameScreen');
+const modeScreen = document.getElementById('modeScreen');
+const gameArea = document.getElementById('gameArea');
+
+const playerNameInput = document.getElementById('playerName');
+const saveNameBtn = document.getElementById('saveName');
+const modeEasy = document.getElementById('modeEasy');
+const modeHard = document.getElementById('modeHard');
+const viewBoards = document.getElementById('viewBoards');
+
+const pnameSpan = document.getElementById('pname');
+const playNumberBtn = document.getElementById('playNumberBtn');
+const timeLeftSpan = document.getElementById('timeLeft');
+const scoreValSpan = document.getElementById('scoreVal');
+const optionsDiv = document.getElementById('options');
+
+const progressBar = document.getElementById('progress');
+
+const endScreen = document.getElementById('endScreen');
+const finalScoreSpan = document.getElementById('finalScore');
+const saveScoreBtn = document.getElementById('saveScoreBtn');
+const playAgainBtn = document.getElementById('playAgainBtn');
+
+const leaderboardsDiv = document.getElementById('leaderboards');
+const boardEasy = document.getElementById('boardEasy');
+const boardHard = document.getElementById('boardHard');
+
+/* ---------------- state ---------------- */
+let playerName = localStorage.getItem('playerName') || '';
+let currentMode = null;
+let timeLeft = GAME_LENGTH;
+let score = 0;
+let currentNumber = null;
+let delayMs = INITIAL_DELAY_MS;
+let timerInterval = null;
+let roundTimeout = null;
+
+/* ---------------- Audio helpers ---------------- */
+function beep(freq, duration=120){
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = "sine";
+    o.frequency.value = freq;
+    o.connect(g);
+    g.connect(ctx.destination);
+    o.start();
+    g.gain.setValueAtTime(0.0001, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.18, ctx.currentTime + 0.01);
+    setTimeout(()=> {
+      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.01);
+      o.stop(ctx.currentTime + 0.02);
+      ctx.close();
+    }, duration);
+  }catch(e){}
+}
+
+function speakArabicWords(text){
+  if (!('speechSynthesis' in window)) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'ar-SA';
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(u);
+}
+
+/* number->words */
+function numberToArabicWords(n){
+  const ones = ["","واحد","اثنان","ثلاثة","أربعة","خمسة","ستة","سبعة","ثمانية","تسعة","عشرة","أحد عشر","اثنا عشر","ثلاثة عشر","أربعة عشر","خمسة عشر","ستة عشر","سبعة عشر","ثمانية عشر","تسعة عشر"];
+  const tens = ["","", "عشرون","ثلاثون","أربعون","خمسون","ستون","سبعون","ثمانون","تسعون"];
+  if (n < 20) return ones[n];
+  if (n < 100){ const t = Math.floor(n/10); const o = n % 10; if (o === 0) return tens[t]; return `${ones[o]} و ${tens[t]}`; }
+  if (n === 100) return "مئة";
+  return String(n);
+}
+
+function toArabicIndic(n){
+  const map = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
+  return String(n).split('').map(d => map[+d] || d).join('');
+}
+
+/* ---------------- Init flow ---------------- */
+if (playerName) { showModeScreen(); } else { nameScreen.style.display = 'block'; modeScreen.style.display = 'none'; gameArea.style.display = 'none'; }
+
+saveNameBtn.addEventListener('click', ()=> {
+  const v = playerNameInput.value.trim();
+  if (!v) return alert('الرجاء إدخال اسم');
+  playerName = v;
+  localStorage.setItem('playerName', playerName);
+  showModeScreen();
+});
+
+function showModeScreen(){
+  nameScreen.style.display = 'none';
+  modeScreen.style.display = 'block';
+  gameArea.style.display = 'none';
+  document.getElementById('pname').textContent = playerName;
+}
+
+/* Mode buttons */
+modeEasy.addEventListener('click', ()=> startGame('easy'));
+modeHard.addEventListener('click', ()=> startGame('hard'));
+viewBoards.addEventListener('click', ()=> {
+  nameScreen.style.display = 'none';
+  modeScreen.style.display = 'none';
+  gameArea.style.display = 'block';
+  leaderboardsDiv.style.display = 'flex';
+  document.getElementById('endScreen').style.display = 'none';
+  // load from firebase if available else local
+  if (db) loadFirebaseBoards(); else loadLocalBoards();
+});
+
+/* replay audio */
+playNumberBtn.addEventListener('click', ()=> {
+  if (currentNumber) playNumberAudio(currentNumber);
+});
+
+/* end screen buttons */
+playAgainBtn.addEventListener('click', ()=> {
+  endScreen.style.display = 'none';
+  startGame(currentMode);
+});
+saveScoreBtn.addEventListener('click', ()=> {
+  if (db) saveScoreFirebase(); else saveScoreLocal();
+});
+
+/* ---------------- Game logic ---------------- */
+function startGame(mode){
+  currentMode = mode;
+  score = 0;
+  timeLeft = GAME_LENGTH;
+  delayMs = INITIAL_DELAY_MS;
+  updateScore();
+  timeLeftSpan.innerText = timeLeft;
+  endScreen.style.display = 'none';
+  leaderboardsDiv.style.display = 'none';
+  optionsDiv.innerHTML = '';
+  nameScreen.style.display = 'none';
+  modeScreen.style.display = 'none';
+  gameArea.style.display = 'block';
+  startTimer();
+  nextRound();
+}
+
+function startTimer(){
+  clearInterval(timerInterval);
+  timerInterval = setInterval(()=> {
+    timeLeft--;
+    timeLeftSpan.innerText = timeLeft;
+    // update progress bar
+    progressBar.style.width = Math.max(0, (timeLeft / GAME_LENGTH) * 100) + '%';
+    if (timeLeft <= 0){
+      clearInterval(timerInterval);
+      finishGame();
+    }
+  }, 1000);
+}
+
+function finishGame(){
+  clearTimeout(roundTimeout);
+  finalScoreSpan.textContent = score;
+  endScreen.style.display = 'block';
+}
+
+async function nextRound(){
+  if (timeLeft <= 0) return;
+  const maxNum = (currentMode === 'easy') ? EASY_MAX : HARD_MAX;
+  const optionsCount = (currentMode === 'easy') ? EASY_OPTIONS : HARD_OPTIONS;
+  currentNumber = randInt(1, maxNum);
+  const answers = buildOptions(currentNumber, optionsCount, maxNum);
+  renderOptions(answers);
+  try { await playNumberAudio(currentNumber); } catch(e){ try { speakArabicWords(numberToArabicWords(currentNumber)); } catch(e){} }
+}
+
+function renderOptions(arr){
+  optionsDiv.innerHTML = '';
+  arr.forEach(n => {
+    const b = document.createElement('button');
+    b.className = 'option';
+    b.innerText = toArabicIndic(n);
+    b.addEventListener('click', ()=> handleChoice(n, b));
+    optionsDiv.appendChild(b);
+  });
+}
+
+function handleChoice(chosen, btnEl){
+  if (timeLeft <= 0) return;
+  // visual feedback
+  if (chosen === currentNumber){
+    score++;
+    updateScore();
+    beep(880, 120);
+    btnEl.classList.add('correct');
+    setTimeout(()=> btnEl.classList.remove('correct'), 350);
+    delayMs = Math.max(MIN_DELAY_MS, delayMs - DELAY_STEP);
+    clearTimeout(roundTimeout);
+    roundTimeout = setTimeout(()=> nextRound(), delayMs);
+  } else {
+    beep(220, 220);
+    btnEl.classList.add('wrong');
+    setTimeout(()=> btnEl.classList.remove('wrong'), 400);
+    clearTimeout(roundTimeout);
+    roundTimeout = setTimeout(()=> nextRound(), delayMs + 300);
+  }
+}
+
+function updateScore(){ scoreValSpan.textContent = score; }
+
+function buildOptions(correct, count, max){
+  const s = new Set([correct]);
+  while (s.size < count){
+    let r = randInt(1, max);
+    if (Math.random() < 0.5) r = Math.min(max, Math.max(1, correct + randInt(-3,3)));
+    s.add(r);
+  }
+  const arr = Array.from(s);
+  for (let i = arr.length -1; i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+
+/* ---------------- Playing number audio: mp3 if present, else TTS ---------------- */
+async function playNumberAudio(num){
+  const audioPath = ASSET_PATH + num + '.mp3';
+  // Try to fetch the file (works when served via http(s))
+  try {
+    const res = await fetch(audioPath, {method:'HEAD'});
+    if (res.ok) {
+      const a = new Audio(audioPath);
+      await a.play().catch(()=>{}); // ignore play errors
+      return;
+    } else {
+      // fallback to TTS
+      speakArabicWords(numberToArabicWords(num));
+      return;
+    }
+  } catch (e) {
+    // some environments (file://) block fetch; try loading audio directly
+    try {
+      const a = new Audio(audioPath);
+      await a.play().catch(()=> {});
+      return;
+    } catch (_) {
+      // fallback TTS
+      speakArabicWords(numberToArabicWords(num));
+      return;
+    }
+  }
+}
+
+/* ---------------- Firebase leaderboard functions ---------------- */
+function saveScoreFirebase(){
+  if (!playerName) return alert('الرجاء إدخال اسم أولاً');
+  const path = (currentMode === 'easy') ? 'leaderboard/easy' : 'leaderboard/hard';
+  const entry = { name: playerName, score: score, time: Date.now() };
+  if (!db) return alert('Firebase غير مهيأ');
+  db.ref(path).push(entry).then(()=> {
+    alert('تم حفظ النتيجة!');
+    loadFirebaseBoards();
+  }).catch(err => { console.error(err); alert('خطأ في الحفظ'); });
+}
+
+function loadFirebaseBoards(){
+  if (!db) return loadLocalBoards();
+  db.ref('leaderboard/easy').orderByChild('score').limitToLast(50).once('value').then(snap => {
+    const arr = [];
+    snap.forEach(c => arr.push(c.val()));
+    arr.sort((a,b)=> b.score - a.score || a.time - b.time);
+    boardEasy.innerHTML = arr.slice(0,20).map(e => `<li>${escapeHtml(e.name)} — ${e.score}</li>`).join('') || '<li class="small">لا توجد نتائج بعد</li>';
+  });
+  db.ref('leaderboard/hard').orderByChild('score').limitToLast(50).once('value').then(snap => {
+    const arr = [];
+    snap.forEach(c => arr.push(c.val()));
+    arr.sort((a,b)=> b.score - a.score || a.time - b.time);
+    boardHard.innerHTML = arr.slice(0,20).map(e => `<li>${escapeHtml(e.name)} — ${e.score}</li>`).join('') || '<li class="small">لا توجد نتائج بعد</li>';
+  });
+}
+
+/* ---------------- Local leaderboard (fallback) ---------------- */
+function saveScoreLocal(){
+  if (!playerName) return alert('الرجاء إدخال اسم أولاً');
+  const key = (currentMode === 'easy') ? 'board_easy' : 'board_hard';
+  const list = JSON.parse(localStorage.getItem(key) || '[]');
+  list.push({name: playerName, score: score, time: Date.now()});
+  list.sort((a,b)=> b.score - a.score || a.time - b.time);
+  localStorage.setItem(key, JSON.stringify(list.slice(0,20)));
+  alert('تم حفظ النتيجة محلياً!');
+  loadLocalBoards();
+}
+
+function loadLocalBoards(){
+  const easy = JSON.parse(localStorage.getItem('board_easy') || '[]');
+  const hard = JSON.parse(localStorage.getItem('board_hard') || '[]');
+  boardEasy.innerHTML = easy.length ? easy.map(e=>`<li>${escapeHtml(e.name)} — ${e.score}</li>`).join('') : '<li class="small">لا توجد نتائج بعد</li>';
+  boardHard.innerHTML = hard.length ? hard.map(e=>`<li>${escapeHtml(e.name)} — ${e.score}</li>`).join('') : '<li class="small">لا توجد نتائج بعد</li>';
+  leaderboardsDiv.style.display = 'flex';
+}
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ---------------- When page loads: try to load firebase boards if available else local ---------------- */
+if (db) {
+  // load when available
+  loadFirebaseBoards();
+} else {
+  loadLocalBoards();
+}
+</script>
+</body>
+</html>
