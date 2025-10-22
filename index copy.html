@@ -133,14 +133,8 @@ body{
 #endScreen{ margin-top:18px; text-align:center; display:none; }
 
 /* leaderboards */
-#leaderboards{ display:none; gap:12px; margin-top:18px; flex-direction:column; align-items:stretch; width:100%; }
-.boards-wrapper{ display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; width:100%; }
-.board{ padding:16px; background:linear-gradient(180deg,#fff,#fff); border-radius:12px; box-shadow:0 8px 28px rgba(0,0,0,0.04); border:1px solid rgba(0,0,0,0.03) }
-.board h4{ margin:0 0 12px 0; font-size:16px; font-weight:900; text-align:center; color:var(--accent); }
-.board ol{ margin:0; padding:0 0 0 24px; list-style:decimal-leading-zero; }
-.board ol li{ padding:6px 0; font-size:14px; border-bottom:1px solid rgba(0,0,0,0.04); }
-.board ol li:last-child{ border-bottom:none; }
-.leaderboard-header{ display:flex; justify-content:space-between; align-items:center; width:100%; margin-bottom:12px; }
+#leaderboards{ display:none; gap:12px; margin-top:18px; justify-content:center; align-items:flex-start; }
+.board{ min-width:240px; padding:16px; background:linear-gradient(180deg,#fff,#fff); border-radius:12px; box-shadow:0 8px 28px rgba(0,0,0,0.04); border:1px solid rgba(0,0,0,0.03) }
 
 /* small */
 .small{ font-size:13px; color:var(--muted) }
@@ -150,10 +144,6 @@ body{
   .mode-grid{ grid-template-columns:repeat(1,1fr) }
   .header{ flex-direction:column; align-items:flex-start; gap:8px }
   .option{ min-width:140px; font-size:18px; padding:14px 18px; }
-  .boards-wrapper{ grid-template-columns:1fr; }
-  .board{ padding:14px; }
-  .board h4{ font-size:15px; }
-  .board ol li{ font-size:13px; padding:5px 0; }
 }
 </style>
 </head>
@@ -164,28 +154,32 @@ body{
       <div class="logo">أ</div>
       <div>
         <div class="title">لعبة الأرقام العربية</div>
-        <div class="subtitle">خمّن الرقم المسموع – سهل وسريع</div>
+        <div class="subtitle">خمن الرقم المسموع — سهل وسريع</div>
       </div>
     </div>
+    <div class="small">يحفظ النتائج عبر Firebase (إن كان مفعلًا) • ملفات الصوت من Google Cloud TTS أو mp3</div>
   </div>
 
   <div class="card center" id="nameScreen">
     <div style="width:100%;text-align:center">
       <h2>أدخل اسمك للبدء</h2>
+      <p class="small">الاسم سيُحفظ لتسجيل النتائج</p>
     </div>
     <div class="input" style="width:100%;max-width:520px">
       <input id="playerName" placeholder="اكتب اسمك هنا" />
       <button id="saveName" class="btn">ابدأ الآن</button>
     </div>
+    <div class="small" style="margin-top:6px">ملاحظة: اضغط "ابدأ الآن" ثم اختر وضع اللعبة</div>
   </div>
 
   <!-- second screen -->
   <div class="card center" id="modeScreen" style="display:none; margin-top:16px; text-align:center; max-width:760px;">
     <h2>اختر الوضع</h2>
+    <p class="small">سهل (1–10 · 3 خيارات) أو صعب (1–100 · 5 خيارات)</p>
     <div class="mode-grid" style="width:100%;margin-top:12px;">
-      <div class="mode-card" id="modeEasy" role="button" tabindex="0"><span class="mode-emoji">🙂</span><div class="mode-title">سهل</div><div class="mode-desc">أرقام ١–١٠ · ٣ خيارات</div></div>
-      <div class="mode-card" id="modeHard" role="button" tabindex="0"><span class="mode-emoji">🔥</span><div class="mode-title">صعب</div><div class="mode-desc">أرقام ١–١٠٠ · ٥ خيارات</div></div>
-      <div class="mode-card" id="viewBoards" role="button" tabindex="0"><span class="mode-emoji">🏆</span><div class="mode-title">لوحة المتصدرين</div><div class="mode-desc">اطلع على أفضل النتائج</div></div>
+      <div class="mode-card" id="modeEasy" role="button" tabindex="0"><span class="mode-emoji">🙂</span><div class="mode-title">سهل</div><div class="mode-desc">أرقام 1–10 · 3 خيارات</div></div>
+      <div class="mode-card" id="modeHard" role="button" tabindex="0"><span class="mode-emoji">🔥</span><div class="mode-title">صعب</div><div class="mode-desc">أرقام 1–100 · 5 خيارات</div></div>
+      <div class="mode-card" id="viewBoards" role="button" tabindex="0"><span class="mode-emoji">🏆</span><div class="mode-title">عرض لوحة المتصدرين</div><div class="mode-desc">اطلع على أفضل النتائج</div></div>
     </div>
   </div>
 
@@ -224,21 +218,12 @@ body{
       </div>
     </div>
 
-    <div id="leaderboards" style="display:none;">
-      <div class="leaderboard-header">
-        <h3 style="margin:0; font-size:20px;">🏆 لوحة المتصدرين</h3>
+    <div id="leaderboards" style="display:none; margin-top:18px; justify-content:center; gap:12px;">
+      <div style="width:100%;display:flex;justify-content:flex-end;gap:8px;margin-bottom:6px">
         <button id="backToModes" class="btn secondary">← رجوع</button>
       </div>
-      <div class="boards-wrapper">
-        <div class="board">
-          <h4>وضع سهل (١–١٠)</h4>
-          <ol id="boardEasy"></ol>
-        </div>
-        <div class="board">
-          <h4>وضع صعب (١–١٠٠)</h4>
-          <ol id="boardHard"></ol>
-        </div>
-      </div>
+      <div class="board"><h4>لوحة (سهل)</h4><ol id="boardEasy"></ol></div>
+      <div class="board"><h4>لوحة (صعب)</h4><ol id="boardHard"></ol></div>
     </div>
   </div>
 </div>
@@ -401,11 +386,6 @@ viewBoards.addEventListener('click', ()=> {
   gameArea.style.display = 'block';
   leaderboardsDiv.style.display = 'flex';
   endScreen.style.display = 'none';
-  
-  // HIDE topbar when viewing leaderboards from menu
-  document.querySelector('.topbar').style.display = 'none';
-  optionsDiv.style.display = 'none';
-  
   if (db) loadFirebaseBoards(); else loadLocalBoards();
 });
 backToModesBtn.addEventListener('click', ()=> {
@@ -444,14 +424,9 @@ function startGame(mode){
   endScreen.style.display = 'none';
   leaderboardsDiv.style.display = 'none';
   optionsDiv.innerHTML = '';
-  optionsDiv.style.display = 'flex'; // show options area
   nameScreen.style.display = 'none';
   modeScreen.style.display = 'none';
   gameArea.style.display = 'block';
-  
-  // SHOW topbar when game starts
-  document.querySelector('.topbar').style.display = 'flex';
-  
   startTimer();
   nextRound();
 }
@@ -489,9 +464,6 @@ function finishGame(){
   // hide the endScreen buttons (we'll still show the simple final score text)
   saveScoreBtn.style.display = 'none';
   playAgainBtn.style.display = 'none';
-  
-  // HIDE THE TOPBAR when game ends
-  document.querySelector('.topbar').style.display = 'none';
 
   // show the minimal end text (keeps the finalScoreSpan visible)
   endScreen.style.display = 'block';
